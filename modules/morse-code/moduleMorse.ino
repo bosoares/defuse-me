@@ -1,23 +1,46 @@
 
+/**
+ *  Module : Morse code
+ *  Author: Bruno Soares
+ *  Version: 0.1.0
+ * 
+ * Components:
+ *  1x Arduino nano
+ *  2x 74HC595N
+ *  2x Common-cathode 7 segment display
+ *  2x Potentiometer 10k ohms
+ *  1x ON/ON swtich
+ *  6x 220 ohms resistor
+ *  1x Yellow LED
+ *  1x Red LED
+ *  1x Green LED
+ */
 
-/*
- * millis variables
- * Use of millis instead of delay()
+/************************************************************************************
+ * 
+ *                                 Global variables
+ * 
+ ************************************************************************************/ 
+/**
+ * Time control variables
+ * Use of millis instead of delay() to not halt microprocessor
  */
  
 // general time keeper
 unsigned long msFromStart = 0;
+
 // LED morse code
 unsigned long msPreviousLedUpdate = 0;
-unsigned long checkMorse = 700; //Morse code speed. Increase to have slower blinking.
+unsigned long checkMorse = 700; // Morse code speed. Increase to have slower blinking.
 
 // LED fail - red
 unsigned long msPreviousLedRedUpdate = 0;
-unsigned long checkRedLed = 300;
+unsigned long checkRedLed = 300; // Error blinking speed. Increase to have slower blinking.
 
 // 7 segments display
 unsigned long msPreviousMoveLED = 0;
 unsigned long checkLed = 1000;
+
 // Potentiometer
 unsigned long checkPotentiometer1 = 100;
 unsigned long msPreviousReadPot1 = 0;
@@ -133,8 +156,8 @@ void setup() {
   digitalWrite(LED_MORSE, HIGH);
 
   // Select word
-  randomSeed(analogRead(7));
-  choosenWord = random(0,14);
+  randomSeed(analogRead(A7));
+  choosenWord = random(0,15);
   Serial.print("Random number: ");
   Serial.println(choosenWord);
   delay(100);
@@ -394,15 +417,10 @@ void convertMorseToBoolean(int wordLength, const char* wordToConvert)
   
   
   while(counterLetterMorse < wordLength)
-  {
-    Serial.print(wordToConvert[counterLetterMorse]);
-    Serial.print(": ");
-    
+  {  
     if(wordToConvert[counterLetterMorse] == 's' || wordToConvert[counterLetterMorse] == 'p')
     {
-      //short (dot) - 1 interval true
       booleanMorseWord[counterLetterBoolean]= wordToConvert[counterLetterMorse] == 's' ? true : false;
-      Serial.print(booleanMorseWord[counterLetterBoolean]);
       counterLetterBoolean++;
     }
     
@@ -411,20 +429,13 @@ void convertMorseToBoolean(int wordLength, const char* wordToConvert)
       for(int i=0; i<3;i++)
       {
         booleanMorseWord[counterLetterBoolean]= wordToConvert[counterLetterMorse] == 'l' ? true : false;
-        Serial.print(booleanMorseWord[counterLetterBoolean]);
         counterLetterBoolean++;
       }
     }
     
     counterLetterMorse++;
-    Serial.println();
   }
   currentWordLength = counterLetterBoolean-1;
-  for(int k; k<counterLetterBoolean;k++)
-  {
-    Serial.println(booleanMorseWord[k]);
-    delay(100);
-  }
 }
 
 bool checkAnswer(int symbol1,int symbol2)
@@ -464,7 +475,7 @@ void checkSwitch()
   {
     // Add the DOT on the left-bottom of the display on the displays
     write7SegmentsDisplay(pattern[7] & pattern[selectedSymbol1], pattern[7] & pattern[selectedSymbol2]);
-    // After button 1 is pressed, it is not possible to change the symbol
+    // After switch 1 is toogled, it is not possible to change the symbol until it returns to initial position.
     // Debounce ignored, as the button can be pressed only once.
     unlockedSymbol = false;
     // check if the answer is correct
